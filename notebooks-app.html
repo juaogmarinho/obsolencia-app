@@ -28,24 +28,34 @@
   header.top{display:flex;justify-content:space-between;align-items:flex-end;padding:28px 36px 18px;border-bottom:1px solid var(--line);flex-wrap:wrap;gap:14px}
   header.top .eyebrow{color:var(--muted-2);font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace}
   header.top h1{font-size:24px;margin-top:4px}
-  header.top .actions{display:flex;gap:10px;flex-wrap:wrap}
-  button{font-family:'Inter',sans-serif;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:var(--panel-2);color:var(--text);padding:9px 14px;font-size:13px;font-weight:500;transition:.15s}
+  header.top .actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:flex-end}
+  header.top .actions-primary{display:flex;gap:6px}
+  header.top .actions-secondary{display:flex;gap:6px;border-left:1px solid var(--line);padding-left:8px;margin-left:2px}
+  button{font-family:'Inter',sans-serif;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:var(--panel-2);color:var(--text);padding:9px 14px;font-size:13px;font-weight:500;transition:.15s;white-space:nowrap}
   button:hover{border-color:#3a4456;background:#1b2330}
   button.primary{background:linear-gradient(135deg,#f0a63c,#e08a2c);border:none;color:#231502;font-weight:700}
   button.primary:hover{filter:brightness(1.08)}
   button.danger{color:var(--red)}
-  button.ghost{background:transparent;border:1px solid transparent;color:var(--muted)}
-  button.ghost:hover{color:var(--text);background:var(--panel-2)}
+  button.ghost{background:transparent;border:1px solid transparent;color:var(--muted);font-size:12px;padding:8px 12px}
+  button.ghost:hover{color:var(--text);background:var(--panel-2);border-color:var(--line)}
+  label.file-input{cursor:pointer;display:inline-flex;align-items:center;gap:4px;background:transparent;border:1px solid transparent;color:var(--muted);font-size:12px;padding:8px 12px;border-radius:8px;transition:.15s;margin:0}
+  label.file-input:hover{color:var(--text);background:var(--panel-2);border-color:var(--line)}
+  label.file-input input{display:none}
+  @media (max-width:1200px){header.top .actions-secondary{border-left:none;padding-left:0;margin-left:0}}
   main{padding:26px 36px 60px;max-width:1400px;margin:0 auto}
 
   .kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:26px}
-  .kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;position:relative;overflow:hidden}
-  .kpi small{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em}
-  .kpi .val{font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700;margin-top:6px}
-  .kpi.warn{border-color:rgba(239,91,91,.35)}
+  .kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden;transition:.2s}
+  .kpi:hover{border-color:#3a4456;background:#1b2330}
+  .kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--muted-2)}
+  .kpi.warn::before{background:var(--red)}
+  .kpi.ok::before{background:var(--green)}
+  .kpi.money::before{background:var(--amber)}
+  .kpi small{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+  .kpi .val{font-family:'Space Grotesk',sans-serif;font-size:32px;font-weight:700;margin-top:8px;letter-spacing:-.5px}
   .kpi.warn .val{color:var(--red)}
   .kpi.ok .val{color:var(--green)}
-  .kpi.money .val{font-size:20px}
+  .kpi.money .val{font-size:24px;color:var(--amber)}
 
   .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
   .toolbar input[type=text]{flex:1;min-width:180px}
@@ -89,7 +99,15 @@
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
   @media (max-width:1100px){.kpis{grid-template-columns:repeat(3,1fr)}}
-  @media (max-width:700px){.kpis{grid-template-columns:repeat(2,1fr)}main{padding:18px}.modal-body{grid-template-columns:1fr}}
+  @media (max-width:700px){
+    .kpis{grid-template-columns:repeat(2,1fr)}
+    main{padding:18px}
+    .modal-body{grid-template-columns:1fr}
+    header.top{flex-direction:column;align-items:stretch;gap:12px}
+    header.top .actions{flex-direction:column}
+    header.top .actions-secondary{flex-wrap:wrap;border-left:none;padding-left:0;margin-left:0}
+    header.top .actions button,header.top .actions label.file-input{width:100%;justify-content:center;font-size:11px}
+  }
 </style>
 </head>
 <body>
@@ -100,9 +118,19 @@
     <h1>Controle de Notebooks Fora de Garantia</h1>
   </div>
   <div class="actions">
-    <button class="ghost" id="exportCsv">Exportar CSV</button>
-    <button class="ghost" id="exportJson">Backup JSON</button>
-    <label class="ghost" style="display:inline-flex;align-items:center;padding:9px 14px;border-radius:8px;border:1px solid var(--line)">Importar<input type="file" id="importJson" accept="application/json" hidden></label>
+    <div class="actions-secondary">
+      <button class="ghost" id="downloadTemplate" title="Baixar template Excel">📥 Template</button>
+      <button class="ghost" id="exportCsv" title="Exportar dados em CSV">📊 CSV</button>
+      <button class="ghost" id="exportJson" title="Fazer backup em JSON">💾 Backup</button>
+      <label class="file-input" title="Importar dados do Excel">
+        📤 Importar Excel
+        <input type="file" id="importExcel" accept=".xlsx,.xls">
+      </label>
+      <label class="file-input" title="Restaurar backup JSON">
+        📥 Importar JSON
+        <input type="file" id="importJson" accept="application/json">
+      </label>
+    </div>
     <button class="primary" id="addBtn">＋ Novo notebook</button>
   </div>
 </header>
@@ -174,6 +202,7 @@
 
 <div id="toast"></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
 <script>
 const KEY = 'notebooks-garantia-v1';
 const statuses = ['Em garantia','Fora da garantia - aguardando compra','Compra aprovada','Novo notebook enviado','Troca concluída'];
@@ -185,7 +214,22 @@ const dateBR = v => v ? new Intl.DateTimeFormat('pt-BR').format(new Date(v+'T12:
 
 let items = load();
 
-function load(){ try{ const d = JSON.parse(localStorage.getItem(KEY)); return Array.isArray(d) ? d : []; } catch { return []; } }
+function load(){ 
+  try{ 
+    const d = JSON.parse(localStorage.getItem(KEY)); 
+    if(Array.isArray(d) && d.length > 0) return d;
+  } catch { }
+  
+  // Dados de exemplo iniciais
+  return [
+    {id:'nb-001',colaborador:'João Silva',email:'joao.silva@empresa.com',depto:'TI',local:'Recife/PE',modelo:'Dell Inspiron 15',patrimonio:'NB-001',dataCompra:'2023-01-15',dataGarantia:'2025-01-15',status:'Fora da garantia - aguardando compra',prioridade:'Alta',valor:2500,obs:'Processa bem, requer manutenção'},
+    {id:'nb-002',colaborador:'Maria Santos',email:'maria@empresa.com',depto:'RH',local:'São Paulo/SP',modelo:'Lenovo ThinkPad',patrimonio:'NB-002',dataCompra:'2022-06-10',dataGarantia:'2024-06-10',status:'Fora da garantia - aguardando compra',prioridade:'Média',valor:3000,obs:''},
+    {id:'nb-003',colaborador:'Pedro Costa',email:'pedro@empresa.com',depto:'Financeiro',local:'Belo Horizonte/MG',modelo:'HP Pavilion',patrimonio:'NB-003',dataCompra:'2024-03-20',dataGarantia:'2026-03-20',status:'Compra aprovada',prioridade:'Alta',valor:2800,obs:'Em processo'},
+    {id:'nb-004',colaborador:'Ana Ferreira',email:'ana@empresa.com',depto:'Marketing',local:'Brasília/DF',modelo:'Asus VivoBook',patrimonio:'NB-004',dataCompra:'2023-08-12',dataGarantia:'2025-08-12',status:'Novo notebook enviado',prioridade:'Média',valor:2200,obs:''},
+    {id:'nb-005',colaborador:'Carlos Oliveira',email:'carlos@empresa.com',depto:'TI',local:'Remoto - Recife/PE',modelo:'MacBook Air M2',patrimonio:'NB-005',dataCompra:'2023-11-05',dataGarantia:'2025-11-05',status:'Troca concluída',prioridade:'Alta',valor:7500,obs:'Entrega confirmada'},
+    {id:'nb-006',colaborador:'Julia Mendes',email:'julia@empresa.com',depto:'Vendas',local:'Salvador/BA',modelo:'Dell Vostro 15',patrimonio:'NB-006',dataCompra:'2024-01-10',dataGarantia:'2026-01-10',status:'Em garantia',prioridade:'Baixa',valor:2400,obs:''}
+  ];
+}
 function save(){ localStorage.setItem(KEY, JSON.stringify(items)); render(); }
 function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2400); }
 
@@ -373,7 +417,102 @@ $('#exportCsv').addEventListener('click', ()=>{
   toast('CSV exportado!');
 });
 
-render();
+// Funções para Excel
+function downloadTemplate(){
+  const headers = ['Colaborador*','E-mail (UPN)','Departamento','Local','Modelo do notebook','Patrimônio / Serial','Data de compra (AAAA-MM-DD)','Fim da garantia (AAAA-MM-DD)','Status','Prioridade','Valor estimado (R$)','Observações'];
+  const sampleData = [
+    ['João Silva','joao.silva@empresa.com','TI','Recife/PE','Dell Inspiron 15','NB-001','2023-01-15','2025-01-15','Em garantia','Alta','2500','Processa bem'],
+    ['Maria Santos','maria@empresa.com','RH','São Paulo/SP','Lenovo ThinkPad','NB-002','2022-06-10','2024-06-10','Fora da garantia - aguardando compra','Média','3000',''],
+  ];
+  
+  const workbook = XLSX.utils.book_new();
+  const worksheet = XLSX.utils.aoa_to_sheet([headers, ...sampleData]);
+  
+  // Estilos e larguras
+  worksheet['!cols'] = [
+    {wch:20},{wch:22},{wch:15},{wch:18},{wch:18},
+    {wch:18},{wch:20},{wch:20},{wch:28},{wch:12},{wch:15},{wch:30}
+  ];
+  
+  // Formatação do cabeçalho
+  for(let i=0;i<headers.length;i++){
+    const cellRef = XLSX.utils.encode_col(i)+'1';
+    if(!worksheet[cellRef]) worksheet[cellRef]={};
+    worksheet[cellRef].s={fill:{fgColor:{rgb:'FFF0A6'}},font:{bold:true}};
+  }
+  
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Notebooks');
+  XLSX.writeFile(workbook, 'template-notebooks-'+new Date().toISOString().slice(0,10)+'.xlsx');
+  toast('Template baixado!');
+}
+
+$('#downloadTemplate').addEventListener('click', downloadTemplate);
+
+$('#importExcel').addEventListener('change', e=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = evt => {
+    try{
+      const data = new Uint8Array(evt.target.result);
+      const workbook = XLSX.read(data,{type:'array'});
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(worksheet,{header:1});
+      
+      if(rows.length<2) throw new Error('Planilha vazia');
+      
+      const headers = rows[0].map(h=>String(h||'').toLowerCase().trim());
+      const colMap = {
+        'colaborador':0,'e-mail (upn)':1,'departamento':2,'local':3,'modelo do notebook':4,
+        'patrimônio / serial':5,'data de compra (aaaa-mm-dd)':6,'fim da garantia (aaaa-mm-dd)':7,
+        'status':8,'prioridade':9,'valor estimado (r$)':10,'observações':11
+      };
+      
+      const imported = [];
+      for(let i=1;i<rows.length;i++){
+        const row = rows[i];
+        if(!row[0]) continue; // Pula linhas vazias
+        
+        const item = {
+          id: crypto.randomUUID ? crypto.randomUUID() : 'id-'+Date.now()+i,
+          colaborador: String(row[0]||'').trim(),
+          email: String(row[1]||'').trim(),
+          depto: String(row[2]||'').trim(),
+          local: String(row[3]||'').trim(),
+          modelo: String(row[4]||'').trim(),
+          patrimonio: String(row[5]||'').trim(),
+          dataCompra: String(row[6]||'').trim(),
+          dataGarantia: String(row[7]||'').trim(),
+          status: String(row[8]||'Em garantia').trim(),
+          prioridade: String(row[9]||'Média').trim(),
+          valor: row[10] ? Number(row[10]) : 0,
+          obs: String(row[11]||'').trim()
+        };
+        
+        if(item.colaborador) imported.push(item);
+      }
+      
+      if(!imported.length) throw new Error('Nenhum registro válido encontrado');
+      
+      if(!confirm(`Importar ${imported.length} notebook(s)? Isto substituirá os dados atuais.`)) return;
+      
+      items = imported;
+      save();
+      toast(`${imported.length} notebook(s) importado(s) com sucesso!`);
+    } catch(err){
+      alert('Erro ao importar planilha: '+err.message);
+      console.error(err);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+  e.target.value = '';
+});
+
+// Renderizar dados iniciais
+setTimeout(() => {
+  render();
+}, 100);
 </script>
 </body>
 </html>
